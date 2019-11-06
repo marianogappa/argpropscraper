@@ -77,7 +77,7 @@ func scrapeDocument(doc *goquery.Document, hoodToScrape string) ([]map[string]st
 		result["title"] = scrapeSelectorAsText(element, ".card__title")
 		result["content"] = scrapeSelectorAsText(element, ".card__info")
 		result["price"] = scrapeSelectorAsText(element, ".card__price")
-		result["expenses"] = strings.TrimSpace(strings.Replace(scrapeSelectorAsText(element, ".card__expenses"), "+", "", -1))
+		result["expenses"] = strings.TrimSpace(strings.Replace(strings.Replace(scrapeSelectorAsText(element, ".card__expenses"), "+", "", -1), " expensas", "", -1))
 		result["url"] = fmt.Sprintf("https://www.argenprop.com%v", scrapeSelectorAttr(element, "a", "href"))
 
 		// Images
@@ -91,7 +91,7 @@ func scrapeDocument(doc *goquery.Document, hoodToScrape string) ([]map[string]st
 		for i := 0; i < 10; i++ {
 			result[fmt.Sprintf("image%v", i+1)] = ""
 			if i < len(imageUrls) {
-				result[fmt.Sprintf("image%v", i+1)] = fmt.Sprintf("=image(%v)", imageUrls[i])
+				result[fmt.Sprintf("image%v", i+1)] = fmt.Sprintf(`=image("%v")`, imageUrls[i])
 			}
 		}
 
