@@ -77,13 +77,13 @@ func scrapeDocument(doc *goquery.Document, hoodToScrape string) ([]map[string]st
 		result["title"] = scrapeSelectorAsText(element, ".card__title")
 		result["content"] = scrapeSelectorAsText(element, ".card__info")
 		result["price"] = scrapeSelectorAsText(element, ".card__price")
-		result["expenses"] = scrapeSelectorAsText(element, ".card__expenses")
+		result["expenses"] = strings.TrimSpace(strings.Replace(scrapeSelectorAsText(element, ".card__expenses"), "+", "", -1))
 		result["url"] = fmt.Sprintf("https://www.argenprop.com%v", scrapeSelectorAttr(element, "a", "href"))
 
 		// Images
 		imageUrls := []string{}
-		element.Find("img").Each(func(index int, element *goquery.Selection) {
-			src, exists := element.Attr("src")
+		element.Find(".card__photos li img").Each(func(index int, element *goquery.Selection) {
+			src, exists := element.Attr("data-src")
 			if exists && src != "" {
 				imageUrls = append(imageUrls, src)
 			}
@@ -91,7 +91,7 @@ func scrapeDocument(doc *goquery.Document, hoodToScrape string) ([]map[string]st
 		for i := 0; i < 10; i++ {
 			result[fmt.Sprintf("image%v", i+1)] = ""
 			if i < len(imageUrls) {
-				result[fmt.Sprintf("image%v", i+1)] = imageUrls[i]
+				result[fmt.Sprintf("image%v", i+1)] = fmt.Sprintf("=image(%v)", imageUrls[i])
 			}
 		}
 
@@ -130,7 +130,7 @@ func scrapeHood(hoodToScrape string) ([]map[string]string, error) {
 		}
 
 		documentProperties, err := scrapeDocument(document, hoodToScrape)
-		if err != nil {
+		if err != nil || len(documentProperties) == 0 {
 			break
 		}
 		for _, documentProperty := range documentProperties {
@@ -149,8 +149,8 @@ func mustWriteResultsAsCSV(results []map[string]string, file io.Writer) {
 
 	// }
 	fields := []string{
-		"image1", "price", "expenses", "address", "title", "details1", "details2", "details3",
-		"details4", "details5", "url", "image2", "content"}
+		"image1", "price", "expenses", "hood", "address", "title", "details1", "details2", "details3",
+		"details4", "details5", "url", "image2", "image3", "image4", "image5", "image6", "image7", "image8", "image9", "content"}
 	if err := w.Write(fields); err != nil {
 		log.Fatalln("error writing record to csv:", err)
 	}
